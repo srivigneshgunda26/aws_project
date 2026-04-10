@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Setup – Cloud Test Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<div class="page-center">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="logo-icon">🛡️</div>
+            <h1>Admin Setup</h1>
+            <p>Create or promote an admin account</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-msg {% if '✅' in messages[0] %}success{% else %}error{% endif %}">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/setup">
+            <div class="form-group">
+                <label for="setup_key">Setup Key</label>
+                <input type="password" id="setup_key" name="setup_key"
+                    placeholder="Enter ADMIN_SETUP_KEY from .env" required />
+            </div>
+
+            <div style="height:1px; background:var(--glass-border); margin: 16px 0;"></div>
+
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Admin Name"
+                    required autocomplete="name" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email"
+                    placeholder="admin@example.com" required />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                    placeholder="Min. 6 characters" required minlength="6" />
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:8px;">
+                🛡️ Create Admin Account
+            </button>
+        </form>
+
+        <div class="auth-links" style="margin-top: 20px;">
+            <p style="font-size:0.8rem; color:var(--text-muted);">
+                To promote an existing user: enter the setup key, leave Name blank,
+                enter their email and any password — the route will update their role.
+            </p>
+            <p style="margin-top:12px;"><a href="/">← Back to Login</a></p>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

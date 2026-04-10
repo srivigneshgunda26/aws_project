@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register – Cloud Test Platform</title>
+    <meta name="description" content="Create a new account on Cloud Test Platform." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<div class="page-center">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="logo-icon">✨</div>
+            <h1>Create Account</h1>
+            <p>Join Cloud Test Platform today</p>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flash-msg {% if 'successful' in messages[0] %}success{% else %}error{% endif %}">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/register" id="registerForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="John Doe" required autocomplete="name" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                    placeholder="Min. 6 characters" required minlength="6"
+                    oninput="checkStrength(this.value)" autocomplete="new-password" />
+                <div id="strengthBar" style="margin-top: 6px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow:hidden;">
+                    <div id="strengthFill" style="height:100%; width:0; border-radius:2px; transition: all 0.3s;"></div>
+                </div>
+                <div id="strengthText" style="font-size:0.75rem; margin-top:4px; color: var(--text-muted);"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 8px;">
+                🚀 Create Account
+            </button>
+        </form>
+
+        <div class="auth-links">
+            <p>Already have an account? <a href="/"><strong>Sign in</strong></a></p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function checkStrength(val) {
+    const fill = document.getElementById('strengthFill');
+    const text = document.getElementById('strengthText');
+    let strength = 0;
+    if (val.length >= 6) strength++;
+    if (val.length >= 10) strength++;
+    if (/[A-Z]/.test(val)) strength++;
+    if (/[0-9]/.test(val)) strength++;
+    if (/[^a-zA-Z0-9]/.test(val)) strength++;
+
+    const colors = ['', '#ff6b6b', '#ff6b6b', '#ffd43b', '#51cf66', '#51cf66'];
+    const labels = ['', 'Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+    fill.style.width = (strength * 20) + '%';
+    fill.style.background = colors[strength];
+    text.textContent = labels[strength] || '';
+    text.style.color = colors[strength];
+}
+</script>
+
+</body>
+</html>

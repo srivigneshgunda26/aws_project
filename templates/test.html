@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Take Test – Cloud Test Platform</title>
+    <meta name="description" content="Attempt the online test on Cloud Test Platform." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="brand-icon">☁️</div>
+        Cloud Test Platform
+    </div>
+    <div class="navbar-user">
+        <a href="/dashboard">🏠 Dashboard</a>
+        <a href="/logout" id="logoutBtn">🚪 Logout</a>
+    </div>
+</nav>
+
+<!-- Timer Bar -->
+<div class="timer-bar">
+    <div class="timer-display">
+        ⏱️ Time Remaining:
+        <span class="clock" id="timerDisplay">--:--</span>
+    </div>
+    <div>
+        <span style="font-size:0.85rem; color: var(--text-muted);">
+            {{ questions | length }} Questions
+        </span>
+        <div class="progress-bar-wrap" style="margin-top:4px;">
+            <div class="progress-bar" id="timerProgress" style="width:100%;"></div>
+        </div>
+    </div>
+</div>
+
+<div class="page-content" style="max-width: 780px;">
+
+    <div class="page-header">
+        <div>
+            <h2>📝 Test Paper</h2>
+            <p>Select one option per question. All questions are required.</p>
+        </div>
+    </div>
+
+    <form method="POST" action="/test" id="testForm" onsubmit="return confirmSubmit()">
+
+        {% for q in questions %}
+        <div class="question-card animate-in" style="animation-delay: {{ loop.index0 * 0.04 }}s;">
+            <div class="question-text">
+                <span class="question-num">{{ loop.index }}</span>
+                {{ q.question }}
+            </div>
+
+            <label class="option-label" for="opt1_{{ loop.index }}">
+                <input type="radio" id="opt1_{{ loop.index }}" name="{{ q.test_id }}" value="{{ q.option1 }}" required />
+                <span>{{ q.option1 }}</span>
+            </label>
+
+            <label class="option-label" for="opt2_{{ loop.index }}">
+                <input type="radio" id="opt2_{{ loop.index }}" name="{{ q.test_id }}" value="{{ q.option2 }}" />
+                <span>{{ q.option2 }}</span>
+            </label>
+
+            <label class="option-label" for="opt3_{{ loop.index }}">
+                <input type="radio" id="opt3_{{ loop.index }}" name="{{ q.test_id }}" value="{{ q.option3 }}" />
+                <span>{{ q.option3 }}</span>
+            </label>
+
+            <label class="option-label" for="opt4_{{ loop.index }}">
+                <input type="radio" id="opt4_{{ loop.index }}" name="{{ q.test_id }}" value="{{ q.option4 }}" />
+                <span>{{ q.option4 }}</span>
+            </label>
+        </div>
+        {% endfor %}
+
+        <div style="text-align: center; margin-top: 12px; padding-bottom: 40px;">
+            <button type="submit" class="btn btn-primary" id="submitBtn"
+                style="width: auto; min-width: 220px; padding: 15px 40px; font-size: 1rem;">
+                ✅ Submit Test
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+// ── Timer ──
+const TOTAL_SECONDS = {{ timer }};
+let remaining = TOTAL_SECONDS;
+const display  = document.getElementById('timerDisplay');
+const progress = document.getElementById('timerProgress');
+
+function formatTime(s) {
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const sec = (s % 60).toString().padStart(2, '0');
+    return `${m}:${sec}`;
+}
+
+function tick() {
+    display.textContent = formatTime(remaining);
+    progress.style.width = ((remaining / TOTAL_SECONDS) * 100) + '%';
+
+    if (remaining <= 60) {
+        display.classList.add('danger');
+        display.classList.remove('warning');
+    } else if (remaining <= 180) {
+        display.classList.add('warning');
+    }
+
+    if (remaining <= 0) {
+        display.textContent = '00:00';
+        document.getElementById('testForm').submit();
+        return;
+    }
+    remaining--;
+}
+
+tick();
+const timerInterval = setInterval(tick, 1000);
+
+// ── Visual option selection ──
+document.querySelectorAll('.option-label').forEach(label => {
+    label.querySelector('input').addEventListener('change', function() {
+        const name = this.name;
+        document.querySelectorAll(`input[name="${name}"]`).forEach(inp => {
+            inp.closest('.option-label').style.background = '';
+            inp.closest('.option-label').style.borderColor = '';
+        });
+        label.style.background = 'rgba(102,126,234,0.2)';
+        label.style.borderColor = 'rgba(102,126,234,0.6)';
+    });
+});
+
+function confirmSubmit() {
+    const total    = {{ questions | length }};
+    const answered = new Set(
+        [...document.querySelectorAll('input[type="radio"]:checked')].map(r => r.name)
+    ).size;
+
+    if (answered < total) {
+        return confirm(`You've answered ${answered} of ${total} questions. Submit anyway?`);
+    }
+    clearInterval(timerInterval);
+    return true;
+}
+</script>
+
+</body>
+</html>

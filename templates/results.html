@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Results – Cloud Test Platform</title>
+    <meta name="description" content="Your test results and leaderboard on Cloud Test Platform." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div class="brand-icon">☁️</div>
+        Cloud Test Platform
+    </div>
+    <div class="navbar-user">
+        <a href="/dashboard">🏠 Dashboard</a>
+        <a href="/test">📝 Retake Test</a>
+        <a href="/logout" id="logoutBtn">🚪 Logout</a>
+    </div>
+</nav>
+
+<div class="page-content">
+
+    <!-- New Score Banner (shown just after submission) -->
+    {% if is_new and new_score is not none %}
+    {% set pct = (new_score | int / new_total | int * 100) | int %}
+    <div class="result-banner animate-in" style="margin-bottom: 32px;">
+        <div style="font-size: 1rem; opacity:0.85; margin-bottom:8px;">
+            🎉 Test Submitted Successfully!
+        </div>
+        <div class="score-big">{{ new_score }} / {{ new_total }}</div>
+        <div class="score-label">
+            {{ pct }}% Score –
+            {% if pct >= 80 %}🏆 Excellent!
+            {% elif pct >= 60 %}👍 Good Job!
+            {% elif pct >= 40 %}📚 Keep Practising
+            {% else %}💪 Don't Give Up!
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="two-col">
+
+        <!-- Left: Results Table -->
+        <div>
+            <div class="page-header">
+                <div>
+                    <h2>📊 Your Results</h2>
+                    <p>{{ results | length }} attempt{{ 's' if results | length != 1 else '' }} recorded</p>
+                </div>
+                <a href="/test" class="btn btn-outline btn-sm">📝 New Attempt</a>
+            </div>
+
+            {% if results %}
+            <div class="glass" style="padding: 0; overflow: hidden;">
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            {% if session.get('role') == 'admin' %}
+                            <th>Student</th>
+                            {% endif %}
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        {% set pct = (r.score | int / r.total | int * 100) | int %}
+                        <tr>
+                            <td style="color: var(--text-muted);">{{ loop.index }}</td>
+                            {% if session.get('role') == 'admin' %}
+                            <td>
+                                <strong>{{ r.get('name', r.user) }}</strong><br>
+                                <span style="font-size:0.78rem; color:var(--text-muted);">{{ r.user }}</span>
+                            </td>
+                            {% endif %}
+                            <td>
+                                <span class="score-pill {% if pct >= 70 %}high{% elif pct >= 40 %}mid{% else %}low{% endif %}">
+                                    {{ r.score }}/{{ r.total }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="flex:1; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+                                        <div style="width:{{ pct }}%; height:100%; border-radius:3px;
+                                            background: {% if pct >= 70 %}linear-gradient(90deg,#51cf66,#12b886){% elif pct >= 40 %}linear-gradient(90deg,#ffd43b,#f76707){% else %}linear-gradient(90deg,#ff6b6b,#e64980){% endif %};"></div>
+                                    </div>
+                                    <span style="font-size:0.85rem; font-weight:600;">{{ pct }}%</span>
+                                </div>
+                            </td>
+                            <td style="color:var(--text-muted); font-size:0.82rem;">{{ r.date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <div class="glass empty-state">
+                <div class="empty-icon">📭</div>
+                <h3>No Results Yet</h3>
+                <p>Take a test to see your results here.</p>
+                <a href="/test" class="btn btn-primary" style="margin-top:16px; width:auto; padding: 10px 24px;">
+                    Start First Test
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Leaderboard -->
+        <div>
+            <div class="section-title">🏆 Leaderboard</div>
+            <div class="glass" style="padding: 20px;">
+                {% if leaderboard %}
+                <ul class="leaderboard-list">
+                    {% for entry in leaderboard %}
+                    {% set rank = loop.index %}
+                    <li class="lb-item">
+                        <div class="lb-rank {% if rank == 1 %}rank-1{% elif rank == 2 %}rank-2{% elif rank == 3 %}rank-3{% else %}rank-n{% endif %}">
+                            {{ rank }}
+                        </div>
+                        <div class="lb-name">{{ entry.name }}</div>
+                        <div class="lb-score">
+                            {{ entry.best }}/{{ entry.total }}
+                            <span style="font-size:0.75rem; color:var(--text-muted);">best</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state" style="padding: 30px;">
+                    <div class="empty-icon">🏅</div>
+                    <p>No entries yet. Be the first!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
